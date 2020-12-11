@@ -1,81 +1,121 @@
 import React from 'react'
+// firebase stuff
+import firebase from 'firebase/app';
+import 'firebase/firestore'
+
+// our components
 import OpenTodos from "./components/OpenTodos";
 import DoneTodos from "./components/DoneTodos";
 import AddTodo from "./components/AddTodo";
+import FirebaseError from './components/FirebaseError';
 
 // CSS style for done items
 const done = {
-    textDecoration: 'line-through',
-    color: 'lightgrey'
+	textDecoration: 'line-through',
+	color: 'lightgrey'
 }
 
 const App = () => {
-    // This is the 'smart' component. It holds the state and the logic
-    const emptyTodo = {
-        title: '',
-        done: false,
-    }
-    const [todo, setTodo] = React.useState(emptyTodo)
-    const [todos, setTodos] = React.useState([])
-    const [showDone, setShowDone] = React.useState(true)
+	// Cloud Firestore constant
+	const db = firebase.firestore();
 
-    const addTodo = () => {
-        const newTodo = {
-            title: todo.title,
-            done: false
-        }
-        setTodos([...todos, newTodo])
-        setTodo(emptyTodo)
-    }
+	// This is the 'smart' component. It holds the state and the logic
+	const emptyTodo = {
+		title: '',
+		done: false,
+	}
+	const [todo, setTodo] = React.useState(emptyTodo)
+	const [todos, setTodos] = React.useState([])
+	const [showDone, setShowDone] = React.useState(true)
+	const [error, setError] = React.useState()
 
-    const updateTodo = (e) => {
-        setTodo({...todo, title: e.target.value})
-    }
+	// OnMounted - get todos collection from firebase, using the useEffect() hook
+	React.useEffect(() => {
+		db.collection('todos').get()
+			.then(res => {
+				const fetchedTodos = []
+				res.docs.forEach(document => {
+						const fetchedTodo = {
+							id: document.id,
+							...document.data()
+						}
+						fetchedTodos.push(fetchedTodo)
+					}
+				)
+				setTodos(fetchedTodos)
+			})
+			.catch(error => setError(error))
+	}, [db])
 
-    const deleteTodo = (item) => {
-        setTodos([...todos.filter(t => t !== item)])
-    }
+	// Functions/methods on the Todo app
+	const addTodo = () => {
+		const newTodo = {
+			title: todo.title,
+			done: false
+		}
+		setTodos([...todos, newTodo])
+		setTodo(emptyTodo)
+	}
 
-    const toggleComplete = todo => {
-        todo.done = !todo.done;
-        setTodos([...todos])
-    }
+	const updateTodo = (e) => {
+		// update the state
+		setTodo({...todo, title: e.target.value})
+	}
 
-    const toggleShowDoneTodos = () => {
-        setShowDone(!showDone)
-    }
+	const deleteTodo = (item) => {
+		setTodos([...todos.filter(t => t !== item)])
+	}
 
-    // The User Interface
-    return (
-        <div className="container">
-            <h1>React Todo-app</h1>
-            {/*Create a controlled component to add the item */}
-            <AddTodo todo={todo} addTodo={addTodo} updateTodo={updateTodo}/>
+	const toggleComplete = todo => {
+		todo.done = !todo.done;
+		setTodos([...todos])
+	}
 
-            {/*Show or hide done todos*/}
-            <label>
-                <input type="checkbox"
-                       checked={showDone}
-                       onChange={toggleShowDoneTodos}
-                />
-                Show done Todos
-            </label>
+	const toggleShowDoneTodos = () => {
+		setShowDone(!showDone)
+	}
 
-            {/*Render open todos*/}
-            {
-                <OpenTodos todos={todos}
-                           deleteTodo={deleteTodo}
-                           toggleComplete={toggleComplete}/>
-            }
-            {/*Render done todos*/}
-            {
-                showDone &&
-                <DoneTodos toggleComplete={toggleComplete}
-                           deleteTodo={deleteTodo}
-                           done={done}
-                           todos={todos}/>
-            }
-        </div>
-    )
+	// The User Interface
+	return (
+		<div className="container">
+			{
+				error ?
+					(
+						<FirebaseError error={error} />
+					) :
+					(
+						<>
+							<h1>React Todo-app</h1>
+							{/*Create a controlled component to add the item */}
+							<AddTodo todo={todo} addTodo={addTodo} updateTodo={updateTodo}/>
+
+							{/*Show or hide done todos*/}
+							<label>
+								<input type="checkbox"
+									   checked={showDone}
+									   onChange={toggleShowDoneTodos}
+								/>
+								Show done Todos
+							</label>
+
+							{/*Render open todos*/}
+							{
+								<OpenTodos todos={todos}
+										   deleteTodo={deleteTodo}
+										   toggleComplete={toggleComplete}/>
+							}
+							{/*Render done todos*/}
+							{
+								showDone &&
+								<DoneTodos toggleComplete={toggleComplete}
+										   deleteTodo={deleteTodo}
+										   done={done}
+										   todos={todos}/>
+							}
+						</>
+					)
+			}
+		</div>
+	)
 }
 export default App;
