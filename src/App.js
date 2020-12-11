@@ -152,15 +152,15 @@ const App = () => {
 				</label>
 				&nbsp; |
 				{/* Set order of items */}
-				Sort order:
-				<label>
-					<select className="form-control"
-							value={sortOrder}
-							onChange={(e) => changeSortOrder(e.target.value)}>
-						<option value="asc">ascending</option>
-						<option value="desc">descending</option>
-					</select>
-				</label>
+				{/*Sort order:*/}
+				{/*<label>*/}
+				{/*	<select className="form-control"*/}
+				{/*			value={sortOrder}*/}
+				{/*			onChange={(e) => changeSortOrder(e.target.value)}>*/}
+				{/*		<option value="asc">ascending</option>*/}
+				{/*		<option value="desc">descending</option>*/}
+				{/*	</select>*/}
+				{/*</label>*/}
 			</div>
 
 			{/*Render open todos*/}

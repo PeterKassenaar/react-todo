@@ -4,7 +4,8 @@ This is a small Sample React TODO application, using separate components, passin
  lifted state into `App.js`
  
  ## Roadmap
- - add Firebase to store Todos
+ - Update sorting order on open Todos
+ - <strike>add Firebase to store Todos</strike>
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
